@@ -4,7 +4,8 @@
   "description": "RAG-based FAQ assistant for Nippon India Mutual Fund schemes",
   "main": "faq-assistant-rag.js",
   "scripts": {
-    "start": "node faq-assistant-rag.js",
+    "start": "node server.js",
+    "start:cli": "node faq-assistant-rag.js",
     "test": "node test-rag.js",
     "build-embeddings": "node build-embeddings.js"
   },
@@ -18,7 +19,9 @@
   "license": "ISC",
   "dependencies": {
     "@google/generative-ai": "^0.21.0",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
   }
 }
 
