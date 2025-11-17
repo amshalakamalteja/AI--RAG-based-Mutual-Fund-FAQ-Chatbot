@@ -1,0 +1,24 @@
+{
+  "name": "nippon-faq-rag-assistant",
+  "version": "2.0.0",
+  "description": "RAG-based FAQ assistant for Nippon India Mutual Fund schemes",
+  "main": "faq-assistant-rag.js",
+  "scripts": {
+    "start": "node faq-assistant-rag.js",
+    "test": "node test-rag.js",
+    "build-embeddings": "node build-embeddings.js"
+  },
+  "keywords": [
+    "faq",
+    "rag",
+    "mutual-fund",
+    "nippon"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "dotenv": "^16.3.1"
+  }
+}
+
