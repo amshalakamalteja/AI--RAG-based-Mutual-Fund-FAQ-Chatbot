@@ -1,8 +1,10 @@
 const fs = require('fs');
+const path = require('path');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
 
-const knowledgeBase = JSON.parse(fs.readFileSync('knowledge_base.json', 'utf8'));
+const knowledgeBasePath = path.resolve(__dirname, 'knowledge_base.json');
+const knowledgeBase = JSON.parse(fs.readFileSync(knowledgeBasePath, 'utf8'));
 
 // Initialize Google Gemini AI client
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY || '');
@@ -82,7 +84,13 @@ async function getEmbedding(text) {
 }
 
 // Convert knowledge base to chunks with embeddings
-async function buildEmbeddings() {
+async function buildEmbeddings(options = {}) {
+  const { outputPath = path.resolve(__dirname, 'embeddings.json') } = options;
+
+  if (!process.env.GOOGLE_API_KEY) {
+    throw new Error('GOOGLE_API_KEY not found in environment variables.');
+  }
+
   console.log('Building embeddings from knowledge base...\n');
   
   const vectorStore = new VectorStore();
@@ -151,21 +159,21 @@ async function buildEmbeddings() {
   }
 
   // Save vector store
-  vectorStore.save('embeddings.json');
+  vectorStore.save(outputPath);
   console.log(`\n✓ Generated ${chunkCount} embeddings`);
-  console.log('✓ Vector store saved to embeddings.json');
+  console.log(`✓ Vector store saved to ${outputPath}`);
 }
 
 // Run if executed directly
 if (require.main === module) {
-  if (!process.env.GOOGLE_API_KEY) {
-    console.error('Error: GOOGLE_API_KEY not found in environment variables.');
-    console.error('Please create a .env file with: GOOGLE_API_KEY=your_api_key_here');
-    console.error('Get your API key from: https://aistudio.google.com/app/apikey');
-    process.exit(1);
-  }
-  buildEmbeddings().catch(console.error);
+  buildEmbeddings()
+    .then(() => process.exit(0))
+    .catch((error) => {
+      console.error('Failed to build embeddings:', error.message);
+      console.error('Please ensure GOOGLE_API_KEY is set in your environment.');
+      process.exit(1);
+    });
 }
 
-module.exports = { VectorStore, getEmbedding };
+module.exports = { VectorStore, getEmbedding, buildEmbeddings };
 

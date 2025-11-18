@@ -1,9 +1,6 @@
 # Environment variables
 .env
 
-# Generated embeddings
-embeddings.json
-
 # Node modules
 node_modules/
 
@@ -14,4 +11,3 @@ npm-debug.log*
 # OS files
 .DS_Store
 Thumbs.db
-

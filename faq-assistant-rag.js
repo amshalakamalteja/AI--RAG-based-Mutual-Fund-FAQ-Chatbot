@@ -1,20 +1,46 @@
 const fs = require('fs');
+const path = require('path');
 const readline = require('readline');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 require('dotenv').config();
-const { VectorStore, getEmbedding } = require('./build-embeddings');
+const { VectorStore, getEmbedding, buildEmbeddings } = require('./build-embeddings');
+
+const knowledgeBasePath = path.resolve(__dirname, 'knowledge_base.json');
+const embeddingsPath = path.resolve(__dirname, 'embeddings.json');
 
 // Load knowledge base
-const knowledgeBase = JSON.parse(fs.readFileSync('knowledge_base.json', 'utf8'));
+const knowledgeBase = JSON.parse(fs.readFileSync(knowledgeBasePath, 'utf8'));
 
-// Load vector store
-const vectorStore = new VectorStore();
-if (fs.existsSync('embeddings.json')) {
-  vectorStore.load('embeddings.json');
-} else {
-  console.error('Error: embeddings.json not found. Please run: npm run build-embeddings');
-  process.exit(1);
+let vectorStorePromise;
+
+async function prepareVectorStore() {
+  const store = new VectorStore();
+
+  if (!fs.existsSync(embeddingsPath)) {
+    console.warn('embeddings.json not found. Generating embeddings before continuing...');
+    await buildEmbeddings({ outputPath: embeddingsPath });
+  }
+
+  store.load(embeddingsPath);
+  return store;
 }
+
+function getVectorStore() {
+  if (!vectorStorePromise) {
+    vectorStorePromise = prepareVectorStore().catch((error) => {
+      console.error('Failed to initialize vector store:', error.message);
+      throw error;
+    });
+  }
+
+  return vectorStorePromise;
+}
+
+// Kick off initialization immediately so deployment failures surface early
+getVectorStore().catch(() => {
+  console.error('Vector store initialization failed. Exiting.');
+  process.exit(1);
+});
 
 // Initialize Google Gemini AI client for embeddings
 const genAI = process.env.GOOGLE_API_KEY ? new GoogleGenerativeAI(process.env.GOOGLE_API_KEY) : null;
@@ -150,6 +176,16 @@ async function getAnswer(question) {
     console.error('Error generating embedding:', error.message);
     return {
       answer: "I'm having trouble processing your question. Please ensure GOOGLE_API_KEY is set in your .env file.",
+      source_url: null
+    };
+  }
+
+  let vectorStore;
+  try {
+    vectorStore = await getVectorStore();
+  } catch (error) {
+    return {
+      answer: "I'm unable to access the knowledge base right now. Please check the server logs and ensure embeddings are generated.",
       source_url: null
     };
   }
