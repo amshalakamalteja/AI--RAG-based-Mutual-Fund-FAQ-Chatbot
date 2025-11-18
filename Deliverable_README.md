@@ -66,8 +66,7 @@
     
 - **Disclaimer snippet used in UI (facts-only, no advice).**
 
-   <img width="492" height="250" alt="image" src="https://github.com/user-attachments/assets/9e1ffba6-fbca-4a09-955c-5a9fb878fa88" />
-
+   <img width="1189" height="907" alt="image" src="https://github.com/user-attachments/assets/ada19387-4b3c-4f75-989d-d1c2a889905f" />
 
 - **Scope-limited to 5 schemes**
   - Answers are derived from a structured `knowledge_base.json` that only contains the 5 listed Nippon India schemes and the statement-download links.
